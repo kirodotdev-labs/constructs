@@ -16,9 +16,11 @@ afterEach(() => {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
-async function synthAgent(app: App, name: string) {
+async function synthAgent(app: App, name: string): Promise<Record<string, unknown>> {
   await app.synth();
-  return JSON.parse(fs.readFileSync(path.join(outdir, 'agents', `${name}.json`), 'utf-8'));
+  return JSON.parse(
+    fs.readFileSync(path.join(outdir, 'agents', `${name}.json`), 'utf-8'),
+  ) as Record<string, unknown>;
 }
 
 describe('Agent', () => {
@@ -35,8 +37,9 @@ describe('Agent', () => {
     const config = await synthAgent(app, 'dev');
     expect(config.tools).toEqual(['shell', 'write', 'read']);
     expect(config.allowedTools).toEqual(['shell']);
-    expect(config.toolsSettings.shell).toEqual({ denyByDefault: true });
-    expect(config.toolsSettings.write).toEqual({ deniedPaths: ['.env'] });
+    const toolsSettings = config.toolsSettings as Record<string, unknown>;
+    expect(toolsSettings.shell).toEqual({ denyByDefault: true });
+    expect(toolsSettings.write).toEqual({ deniedPaths: ['.env'] });
   });
 
   it('flattens ToolConfig[] from BuiltInTool.all()', async () => {
@@ -54,8 +57,9 @@ describe('Agent', () => {
     });
     agent.addTool(BuiltInTool.shell({ allow: [Shell.npm.scripts()], deny: [Shell.git.destructive()] }));
     const config = await synthAgent(app, 'dev');
-    expect(config.toolsSettings.shell.allowedCommands).toHaveLength(2);
-    expect(config.toolsSettings.shell.deniedCommands).toHaveLength(1);
+    const shell = (config.toolsSettings as Record<string, Record<string, unknown>>).shell;
+    expect(shell.allowedCommands).toHaveLength(2);
+    expect(shell.deniedCommands).toHaveLength(1);
   });
 
   it('addX builder methods work after construction and chain', async () => {
@@ -71,8 +75,10 @@ describe('Agent', () => {
     const config = await synthAgent(app, 'dev');
     expect(config.tools).toEqual(['write']);
     expect(config.allowedTools).toEqual(['write']);
-    expect(config.mcpServers.github).toEqual({ command: 'gh-mcp' });
-    expect(config.hooks.agentSpawn).toHaveLength(1);
+    const mcpServers = config.mcpServers as Record<string, unknown>;
+    expect(mcpServers.github).toEqual({ command: 'gh-mcp' });
+    const hooks = config.hooks as Record<string, unknown[]>;
+    expect(hooks.agentSpawn).toHaveLength(1);
     expect(config.resources).toHaveLength(1);
   });
 

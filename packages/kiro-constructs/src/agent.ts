@@ -32,9 +32,9 @@ function deepMerge(target: Record<string, unknown>, source: Record<string, unkno
     const tVal = target[key];
     const sVal = source[key];
     if (Array.isArray(tVal) && Array.isArray(sVal)) {
-      result[key] = [...tVal, ...sVal];
+      result[key] = [...(tVal as unknown[]), ...(sVal as unknown[])];
     } else if (isPlainObject(tVal) && isPlainObject(sVal)) {
-      result[key] = deepMerge(tVal as Record<string, unknown>, sVal as Record<string, unknown>);
+      result[key] = deepMerge(tVal, sVal);
     } else {
       result[key] = sVal;
     }
@@ -75,7 +75,7 @@ export class Agent extends Construct {
 
     if (props.hooks) {
       for (const [k, v] of Object.entries(props.hooks)) {
-        if (v) this._hooks.set(k as keyof CfgAgent.HooksProperty, [...v]);
+        if (v) this._hooks.set(k as keyof CfgAgent.HooksProperty, [...(v as CfgAgent.HookProperty[])]);
       }
     }
 
