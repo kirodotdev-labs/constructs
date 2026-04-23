@@ -15,3 +15,14 @@ export { KiroCliProvider, type KiroCliProviderProps } from './providers/kiro-cli
 export { BedrockProvider, type BedrockProviderProps } from './providers/bedrock-provider.js';
 export { Logger, ConsoleLogger, type ILogger } from './logger.js';
 export { packageDir } from './package-dir.js';
+export {
+  type ToolConfig,
+  BuiltInTool,
+  type AllToolsProps,
+  type BuiltInToolProps,
+  type ShellToolProps,
+  type PathToolProps,
+  type PathToolWithReadOnlyProps,
+  Shell,
+  type IShellPermission,
+} from './tools/index.js';
