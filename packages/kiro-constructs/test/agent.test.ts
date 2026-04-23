@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { App, Agent, BuiltInTool, Shell } from '../src/index.js';
+import { App, Agent, Skill, Prompt, BuiltInTool, Shell } from '../src/index.js';
 
 let tmpDir: string;
 let outdir: string;
@@ -86,5 +86,18 @@ describe('Agent', () => {
     expect(config).not.toHaveProperty('mcpServers');
     expect(config).not.toHaveProperty('hooks');
     expect(config).not.toHaveProperty('resources');
+  });
+
+  it('addSkill adds skill:// resource and addPrompt adds file:// resource', async () => {
+    const app = new App({ outdir });
+    const skill = new Skill(app, 'ts', { description: 'TS', instructions: '# TS' });
+    const prompt = new Prompt(app, 'review', { content: '# Review' });
+    const agent = new Agent(app, 'dev', { description: 'Dev', skills: [skill] });
+    agent.addPrompt(prompt);
+    const config = await synthAgent(app, 'dev');
+    expect(config.resources).toEqual([
+      'skill://skills/ts/SKILL.md',
+      'file://prompts/review.md',
+    ]);
   });
 });

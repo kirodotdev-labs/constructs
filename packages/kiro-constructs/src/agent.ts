@@ -2,6 +2,8 @@ import { Construct } from 'constructs';
 import { CfgAgent } from './l1/cfg-agent.js';
 import { Lazy } from './lazy.js';
 import type { ToolConfig } from './tools/tool-config.js';
+import type { Skill } from './skill.js';
+import type { Prompt } from './prompt.js';
 
 export interface AgentProps {
   readonly name?: string;
@@ -9,6 +11,8 @@ export interface AgentProps {
   readonly prompt?: string;
   readonly model?: string;
   readonly tools?: (string | ToolConfig | ToolConfig[])[];
+  readonly skills?: Skill[];
+  readonly prompts?: Prompt[];
   readonly mcpServers?: Record<string, CfgAgent.McpServerProperty>;
   readonly hooks?: CfgAgent.HooksProperty;
   readonly resources?: (string | CfgAgent.ResourceProperty)[];
@@ -79,6 +83,14 @@ export class Agent extends Construct {
       this._resources.push(...props.resources);
     }
 
+    if (props.skills) {
+      for (const s of props.skills) this.addSkill(s);
+    }
+
+    if (props.prompts) {
+      for (const p of props.prompts) this.addPrompt(p);
+    }
+
     new CfgAgent(this, 'Resource', {
       name: this.agentName,
       description: props.description,
@@ -120,6 +132,16 @@ export class Agent extends Construct {
 
   addResource(resource: string | CfgAgent.ResourceProperty): this {
     this._resources.push(resource);
+    return this;
+  }
+
+  addSkill(skill: Skill): this {
+    this._resources.push(`skill://skills/${skill.skillName}/SKILL.md`);
+    return this;
+  }
+
+  addPrompt(prompt: Prompt): this {
+    this._resources.push(`file://prompts/${prompt.promptName}.md`);
     return this;
   }
 

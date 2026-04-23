@@ -24,3 +24,5 @@ export {
   type IShellPermission,
 } from './tools/index.js';
 export { Agent, type AgentProps } from './agent.js';
+export { Skill, type SkillProps } from './skill.js';
+export { Prompt, type PromptProps } from './prompt.js';

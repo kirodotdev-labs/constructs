@@ -191,13 +191,15 @@ export interface AgentProps {
   readonly prompt?: string;
   readonly model?: string;
   readonly tools?: (string | ToolConfig | ToolConfig[])[];
+  readonly skills?: Skill[];
+  readonly prompts?: Prompt[];
   readonly mcpServers?: Record<string, McpServerConfig>;
   readonly hooks?: HooksConfig;
   readonly resources?: (string | ResourceConfig)[];
 }
 ```
 
-Note `tools` accepts `ToolConfig[]` too (from `BuiltInTool.all()`), which gets flattened.
+Note `tools` accepts `ToolConfig[]` too (from `BuiltInTool.all()`), which gets flattened. `skills` and `prompts` accept L2 construct instances and wire them into the `resources` array as `skill://` and `file://` URIs respectively.
 
 ### Behavior
 
@@ -207,8 +209,19 @@ Note `tools` accepts `ToolConfig[]` too (from `BuiltInTool.all()`), which gets f
 - `addMcpServer(name, config)` — adds to MCP servers map
 - `addHook(event, entry)` — appends to hooks for the given lifecycle event
 - `addResource(resource)` — appends to resources list
+- `addSkill(skill: Skill)` — adds a `skill://` resource pointing to the skill's synthesized SKILL.md path. This is how Kiro CLI discovers skills for an agent: via `skill://` URIs in the `resources` array. The skill's output path is `skills/{skillName}/SKILL.md`, so this method adds `skill://skills/{skillName}/SKILL.md` to the resources list.
+- `addPrompt(prompt: Prompt)` — adds a `file://` resource pointing to the prompt's synthesized markdown path (`prompts/{name}.md`). This loads the prompt content into the agent's context at startup.
 - All `addX()` methods return `this` for chaining
 - When the same tool is added twice, settings are deep-merged (via `lodash.merge` or manual spread)
+
+### How Skills and Prompts Wire Into Agents
+
+Per the [Kiro CLI agent configuration reference](https://kiro.dev/docs/cli/custom-agents/configuration-reference/), skills are registered on agents via the `resources` field using URI schemes:
+
+- `skill://path/to/SKILL.md` — skill resources are progressively loaded: metadata (name, description) at startup, full content on demand
+- `file://path/to/file.md` — file resources are loaded directly into context at startup
+
+When you call `agent.addSkill(skill)`, the Agent adds `skill://skills/{skillName}/SKILL.md` to its resources. When you call `agent.addPrompt(prompt)`, it adds `file://prompts/{promptName}.md`.
 
 ### Example
 
@@ -225,6 +238,18 @@ const agent = new Agent(app, 'dev', {
   ],
 });
 
+const skill = new Skill(app, 'typescript', {
+  description: 'TypeScript expertise',
+  instructions: '# TypeScript\n\nUse strict mode...',
+});
+
+const prompt = new Prompt(app, 'review', {
+  content: '# Code Review\n\nReview for correctness.',
+});
+
+agent.addSkill(skill);
+agent.addPrompt(prompt);
+
 agent.addMcpServer('github', {
   command: 'gh-mcp',
   env: { GITHUB_TOKEN: '${GITHUB_TOKEN}' },
@@ -238,7 +263,9 @@ agent.addMcpServer('github', {
 - [ ] `ToolConfig` objects correctly split into `tools`, `allowedTools`, `toolsSettings`
 - [ ] Tool settings deep-merge when same tool added twice
 - [ ] `ToolConfig[]` (from `BuiltInTool.all()`) flattened correctly
-- [ ] Unit tests: basic synth, builder methods, tool decomposition, tool merging, empty agent
+- [ ] `addSkill(skill)` adds `skill://skills/{name}/SKILL.md` to resources
+- [ ] `addPrompt(prompt)` adds `file://prompts/{name}.md` to resources
+- [ ] Unit tests: basic synth, builder methods, tool decomposition, tool merging, skill/prompt registration
 
 ---
 
@@ -308,8 +335,9 @@ export interface PromptProps {
 }
 ```
 
-### Behavior
+Implement `Prompt` class extending `Construct`:
 
+- `readonly promptName: string` (public, set from `props.name ?? id`) — used by `Agent.addPrompt()` to build the `file://` resource URI
 - Wraps `CfgPrompt` — delegates synthesis entirely
 - `Prompt.fromFile()` static factory reads a markdown file from disk, parsing YAML frontmatter into metadata and body into content
 - Provides `appendContent()` method for post-construction content additions (uses `Lazy` internally)
