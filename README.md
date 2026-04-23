@@ -11,12 +11,15 @@ git clone https://github.com/kirodotdev-labs/constructs.git
 cd constructs
 npm install
 npm run build
+cd packages/kiro-constructs
+npm link
 ```
 
-Then in your project, add a dependency pointing to the local package:
+Then in your project, link the package and install the required `constructs` peer dependency:
 
 ```bash
-npm install ../constructs/packages/kiro-constructs constructs
+npm link @kiro/constructs
+npm install constructs
 ```
 
 ## Quick Start
