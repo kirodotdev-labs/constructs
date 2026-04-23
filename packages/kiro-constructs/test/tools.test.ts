@@ -42,11 +42,19 @@ describe('BuiltInTool', () => {
   it('all() returns 9 tools with cascading allowed and per-tool overrides', () => {
     const tools = BuiltInTool.all({ allowed: true, shell: { allowed: false } });
     expect(tools).toHaveLength(9);
-    expect(tools.map(t => t.toolName)).toEqual([
-      'shell', 'read', 'write', 'glob', 'grep', 'aws', 'web_fetch', 'web_search', 'code',
+    expect(tools.map((t) => t.toolName)).toEqual([
+      'shell',
+      'read',
+      'write',
+      'glob',
+      'grep',
+      'aws',
+      'web_fetch',
+      'web_search',
+      'code',
     ]);
-    expect(tools.find(t => t.toolName === 'shell')!.allowed).toBe(false);
-    expect(tools.filter(t => t.toolName !== 'shell').every(t => t.allowed)).toBe(true);
+    expect(tools.find((t) => t.toolName === 'shell')!.allowed).toBe(false);
+    expect(tools.filter((t) => t.toolName !== 'shell').every((t) => t.allowed)).toBe(true);
   });
 });
 

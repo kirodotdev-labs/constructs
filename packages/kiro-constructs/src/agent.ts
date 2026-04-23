@@ -26,7 +26,10 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
 
-function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
+function deepMerge(
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+): Record<string, unknown> {
   const result = { ...target };
   for (const key of Object.keys(source)) {
     const tVal = target[key];
@@ -75,7 +78,8 @@ export class Agent extends Construct {
 
     if (props.hooks) {
       for (const [k, v] of Object.entries(props.hooks)) {
-        if (v) this._hooks.set(k as keyof CfgAgent.HooksProperty, [...(v as CfgAgent.HookProperty[])]);
+        if (v)
+          this._hooks.set(k as keyof CfgAgent.HooksProperty, [...(v as CfgAgent.HookProperty[])]);
       }
     }
 
@@ -146,7 +150,7 @@ export class Agent extends Construct {
   }
 
   private renderTools(): string[] | undefined {
-    const names = this._tools.map(t => isToolConfig(t) ? t.toolName : t);
+    const names = this._tools.map((t) => (isToolConfig(t) ? t.toolName : t));
     const deduped = [...new Set(names)];
     return deduped.length ? deduped : undefined;
   }
@@ -154,7 +158,7 @@ export class Agent extends Construct {
   private renderAllowedTools(): string[] | undefined {
     const names = this._tools
       .filter((t): t is ToolConfig => isToolConfig(t) && t.allowed === true)
-      .map(t => t.toolName);
+      .map((t) => t.toolName);
     const deduped = [...new Set(names)];
     return deduped.length ? deduped : undefined;
   }

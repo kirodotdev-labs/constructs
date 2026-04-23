@@ -55,7 +55,9 @@ describe('Agent', () => {
       description: 'Dev',
       tools: [BuiltInTool.shell({ allow: [Shell.git.readonly()] })],
     });
-    agent.addTool(BuiltInTool.shell({ allow: [Shell.npm.scripts()], deny: [Shell.git.destructive()] }));
+    agent.addTool(
+      BuiltInTool.shell({ allow: [Shell.npm.scripts()], deny: [Shell.git.destructive()] }),
+    );
     const config = await synthAgent(app, 'dev');
     const shell = (config.toolsSettings as Record<string, Record<string, unknown>>).shell;
     expect(shell.allowedCommands).toHaveLength(2);
@@ -101,9 +103,6 @@ describe('Agent', () => {
     const agent = new Agent(app, 'dev', { description: 'Dev', skills: [skill] });
     agent.addPrompt(prompt);
     const config = await synthAgent(app, 'dev');
-    expect(config.resources).toEqual([
-      'skill://skills/ts/SKILL.md',
-      'file://prompts/review.md',
-    ]);
+    expect(config.resources).toEqual(['skill://skills/ts/SKILL.md', 'file://prompts/review.md']);
   });
 });

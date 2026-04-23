@@ -36,8 +36,8 @@ export interface AllToolsProps extends BuiltInToolProps {
 export class BuiltInTool {
   static shell(props: ShellToolProps = {}): ToolConfig {
     const settings: Record<string, unknown> = {};
-    if (props.allow?.length) settings.allowedCommands = props.allow.flatMap(p => p.patterns);
-    if (props.deny?.length) settings.deniedCommands = props.deny.flatMap(p => p.patterns);
+    if (props.allow?.length) settings.allowedCommands = props.allow.flatMap((p) => p.patterns);
+    if (props.deny?.length) settings.deniedCommands = props.deny.flatMap((p) => p.patterns);
     if (props.autoAllowReadonly !== undefined) settings.autoAllowReadonly = props.autoAllowReadonly;
     if (props.denyByDefault !== undefined) settings.denyByDefault = props.denyByDefault;
     return this.build('shell', props.allowed, settings);
@@ -94,12 +94,19 @@ export class BuiltInTool {
     const settings: Record<string, unknown> = {};
     if (props.allowedPaths?.length) settings.allowedPaths = props.allowedPaths;
     if (props.deniedPaths?.length) settings.deniedPaths = props.deniedPaths;
-    if ('allowReadOnly' in props && props.allowReadOnly !== undefined) settings.allowReadOnly = props.allowReadOnly;
+    if ('allowReadOnly' in props && props.allowReadOnly !== undefined)
+      settings.allowReadOnly = props.allowReadOnly;
     return this.build(toolName, props.allowed, settings);
   }
 
-  private static build(toolName: string, allowed?: boolean, settings?: Record<string, unknown>): ToolConfig {
-    const result: { toolName: string; allowed?: boolean; settings?: Record<string, unknown> } = { toolName };
+  private static build(
+    toolName: string,
+    allowed?: boolean,
+    settings?: Record<string, unknown>,
+  ): ToolConfig {
+    const result: { toolName: string; allowed?: boolean; settings?: Record<string, unknown> } = {
+      toolName,
+    };
     if (allowed !== undefined) result.allowed = allowed;
     if (settings && Object.keys(settings).length > 0) result.settings = settings;
     return result;
