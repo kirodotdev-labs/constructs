@@ -4,5 +4,6 @@ coverage/
 .kiro-constructs.out/
 .kiro-constructs.cache/
 *.tsbuildinfo
+docs/
 
 .idea/
