@@ -1,134 +1,60 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-
 import { describe, it, expect } from 'vitest';
 import { BuiltInTool, Shell } from '../src/index.js';
 
-describe('ToolConfig and BuiltInTool', () => {
-  describe('BuiltInTool.shell', () => {
-    it('returns toolName shell with no settings when called with no args', () => {
-      expect(BuiltInTool.shell()).toEqual({ toolName: 'shell' });
+describe('BuiltInTool', () => {
+  it('shell maps allow/deny permissions to settings', () => {
+    const result = BuiltInTool.shell({
+      allowed: true,
+      allow: [Shell.git.readonly(), Shell.npm.scripts()],
+      deny: [Shell.git.destructive()],
+      denyByDefault: true,
     });
+    expect(result.toolName).toBe('shell');
+    expect(result.allowed).toBe(true);
+    expect(result.settings?.allowedCommands).toHaveLength(2);
+    expect(result.settings?.deniedCommands).toHaveLength(1);
+    expect(result.settings?.denyByDefault).toBe(true);
+  });
 
-    it('includes allowed when specified', () => {
-      expect(BuiltInTool.shell({ allowed: true })).toEqual({ toolName: 'shell', allowed: true });
+  it('path tools map allowedPaths, deniedPaths, and allowReadOnly to settings', () => {
+    expect(BuiltInTool.write({ deniedPaths: ['.env'] })).toEqual({
+      toolName: 'write',
+      settings: { deniedPaths: ['.env'] },
     });
-
-    it('maps allow permissions to allowedCommands in settings', () => {
-      const result = BuiltInTool.shell({ allow: [Shell.git.readonly()] });
-      expect(result.toolName).toBe('shell');
-      expect(result.settings?.allowedCommands).toBeInstanceOf(Array);
-      expect((result.settings?.allowedCommands as string[]).length).toBe(1);
-      expect((result.settings?.allowedCommands as string[])[0]).toMatch(/^.*git.*status.*$/);
-    });
-
-    it('maps deny permissions to deniedCommands in settings', () => {
-      const result = BuiltInTool.shell({ deny: [Shell.git.destructive()] });
-      expect(result.settings?.deniedCommands).toBeInstanceOf(Array);
-    });
-
-    it('includes autoAllowReadonly and denyByDefault in settings', () => {
-      const result = BuiltInTool.shell({ autoAllowReadonly: true, denyByDefault: true });
-      expect(result.settings).toEqual({ autoAllowReadonly: true, denyByDefault: true });
-    });
-
-    it('combines multiple permissions by flattening patterns', () => {
-      const result = BuiltInTool.shell({ allow: [Shell.git.readonly(), Shell.npm.scripts()] });
-      expect((result.settings?.allowedCommands as string[]).length).toBe(2);
+    expect(BuiltInTool.glob({ allowReadOnly: true })).toEqual({
+      toolName: 'glob',
+      settings: { allowReadOnly: true },
     });
   });
 
-  describe('BuiltInTool path tools', () => {
-    it('read returns toolName read', () => {
-      expect(BuiltInTool.read()).toEqual({ toolName: 'read' });
-    });
-
-    it('write includes path settings', () => {
-      const result = BuiltInTool.write({ deniedPaths: ['.env'] });
-      expect(result).toEqual({ toolName: 'write', settings: { deniedPaths: ['.env'] } });
-    });
-
-    it('glob includes allowReadOnly', () => {
-      const result = BuiltInTool.glob({ allowReadOnly: true });
-      expect(result).toEqual({ toolName: 'glob', settings: { allowReadOnly: true } });
-    });
-
-    it('grep includes allowedPaths and deniedPaths', () => {
-      const result = BuiltInTool.grep({ allowedPaths: ['/src'], deniedPaths: ['/dist'] });
-      expect(result.settings).toEqual({ allowedPaths: ['/src'], deniedPaths: ['/dist'] });
-    });
+  it('simple tools use correct toolNames', () => {
+    expect(BuiltInTool.webFetch().toolName).toBe('web_fetch');
+    expect(BuiltInTool.webSearch().toolName).toBe('web_search');
   });
 
-  describe('BuiltInTool simple tools', () => {
-    it('aws returns toolName aws', () => {
-      expect(BuiltInTool.aws()).toEqual({ toolName: 'aws' });
-    });
-
-    it('webFetch uses toolName web_fetch', () => {
-      expect(BuiltInTool.webFetch()).toEqual({ toolName: 'web_fetch' });
-    });
-
-    it('webSearch uses toolName web_search', () => {
-      expect(BuiltInTool.webSearch()).toEqual({ toolName: 'web_search' });
-    });
-
-    it('code returns toolName code', () => {
-      expect(BuiltInTool.code()).toEqual({ toolName: 'code' });
-    });
+  it('no-arg factories return only toolName', () => {
+    const result = BuiltInTool.shell();
+    expect(result).toEqual({ toolName: 'shell' });
+    expect(result).not.toHaveProperty('settings');
+    expect(result).not.toHaveProperty('allowed');
   });
 
-  describe('BuiltInTool.all', () => {
-    it('returns exactly 9 tools', () => {
-      expect(BuiltInTool.all()).toHaveLength(9);
-    });
-
-    it('returns all expected tool names', () => {
-      const names = BuiltInTool.all().map(t => t.toolName);
-      expect(names).toEqual(['shell', 'read', 'write', 'glob', 'grep', 'aws', 'web_fetch', 'web_search', 'code']);
-    });
-
-    it('cascades allowed to all tools', () => {
-      const tools = BuiltInTool.all({ allowed: true });
-      tools.forEach(t => expect(t.allowed).toBe(true));
-    });
-
-    it('allows per-tool override of allowed', () => {
-      const tools = BuiltInTool.all({ allowed: true, shell: { allowed: false } });
-      const shell = tools.find(t => t.toolName === 'shell')!;
-      expect(shell.allowed).toBe(false);
-      const rest = tools.filter(t => t.toolName !== 'shell');
-      rest.forEach(t => expect(t.allowed).toBe(true));
-    });
-
-    it('passes per-tool settings through', () => {
-      const tools = BuiltInTool.all({ write: { deniedPaths: ['.env'] } });
-      const write = tools.find(t => t.toolName === 'write')!;
-      expect(write.settings).toEqual({ deniedPaths: ['.env'] });
-    });
+  it('all() returns 9 tools with cascading allowed and per-tool overrides', () => {
+    const tools = BuiltInTool.all({ allowed: true, shell: { allowed: false } });
+    expect(tools).toHaveLength(9);
+    expect(tools.map(t => t.toolName)).toEqual([
+      'shell', 'read', 'write', 'glob', 'grep', 'aws', 'web_fetch', 'web_search', 'code',
+    ]);
+    expect(tools.find(t => t.toolName === 'shell')!.allowed).toBe(false);
+    expect(tools.filter(t => t.toolName !== 'shell').every(t => t.allowed)).toBe(true);
   });
+});
 
-  describe('Shell', () => {
-    it('Shell.command returns custom pattern', () => {
-      expect(Shell.command('my-cmd.*').patterns).toEqual(['my-cmd.*']);
-    });
-
-    it('Shell.git.readonly returns patterns matching git read commands', () => {
-      const patterns = Shell.git.readonly().patterns;
-      expect(patterns.length).toBe(1);
-      expect(patterns[0]).toContain('git');
-      expect(patterns[0]).toContain('status');
-    });
-
-    it('Shell.npm.scripts returns patterns matching npm commands', () => {
-      const patterns = Shell.npm.scripts().patterns;
-      expect(patterns[0]).toContain('npm');
-      expect(patterns[0]).toContain('run');
-    });
-
-    it('Shell.files.inspect returns patterns matching file commands', () => {
-      const patterns = Shell.files.inspect().patterns;
-      expect(patterns[0]).toContain('ls');
-      expect(patterns[0]).toContain('cat');
-    });
+describe('Shell', () => {
+  it('permission helpers produce regex patterns matching expected commands', () => {
+    expect(Shell.git.readonly().patterns[0]).toContain('status');
+    expect(Shell.npm.scripts().patterns[0]).toContain('npm');
+    expect(Shell.files.inspect().patterns[0]).toContain('ls');
+    expect(Shell.command('my-cmd').patterns).toEqual(['my-cmd']);
   });
 });

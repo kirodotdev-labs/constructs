@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-
 /**
  * Basic example: synthesize a Kiro agent and prompt using core constructs.
  *

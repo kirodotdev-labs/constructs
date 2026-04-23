@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-
 import { Construct, type IConstruct } from 'constructs';
 import * as path from 'path';
 import { Assembly, type IAssembly } from './synthesis/assembly.js';

@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import type { App } from '../app.js';

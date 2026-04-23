@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-
 import { describe, it, expect } from 'vitest';
 import { BedrockRuntimeClient } from '@aws-sdk/client-bedrock-runtime';
 import { BedrockProvider } from '../src/index.js';

@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-
 import { describe, it, expect, beforeAll } from 'vitest';
 import { execFile } from 'child_process';
 import { promisify } from 'util';

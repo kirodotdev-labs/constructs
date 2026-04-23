@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-
 export { App, type AppProps } from './app.js';
 export { Assembly, type IAssembly } from './synthesis/assembly.js';
 export { Source, type ISource } from './synthesis/source.js';
@@ -26,3 +23,4 @@ export {
   Shell,
   type IShellPermission,
 } from './tools/index.js';
+export { Agent, type AgentProps } from './agent.js';

@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-
 const SAFE_ARGS = '( [^;|&`$]+)?';
 const SAFE_PIPE = '( \\| (tail|head)( -[0-9n]+)?| \\| grep( [^;|&`$]+)?)?';
 const STDERR_REDIRECT = '( 2>(&1|/dev/null))?';
